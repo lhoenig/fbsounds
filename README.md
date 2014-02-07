@@ -15,3 +15,7 @@ perl will tell you which modules you are missing.
 `./fbsounds facebook-id output-dir`  
 
 
+### TODO's  
+  
+- better command line options
+- soundcloud downloads :)
