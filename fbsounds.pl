@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -6,10 +6,21 @@ use warnings;
 use JSON;
 use LWP::UserAgent;
 use URI::Encode;
+use Getopt::Long;
 
 my $ua  = LWP::UserAgent->new;
 my $uri = URI::Encode->new( { encode_reserved => 0 } );
 my $json = JSON->new->allow_nonref;
+
+
+sub usage_string {
+    print "Usage: " . $0 . " -id <facebook-id>  -o <output-dir>  -f <audio-format>  -q <audio-quality>\n";
+    exit(1);
+}
+
+sub dbg {
+    print "DEBUG: " . $_[0] . "\n";
+}
 
 # example groups
 
@@ -18,12 +29,26 @@ my $json = JSON->new->allow_nonref;
 # the29nov core
 #my $group = "108775282491150";
 
+# facebook group or site
+my $group;
 
-# group or site, first argument
-my $group = $ARGV[0];
+# output directory, default cwd
+my $outputDir = ".";
 
-# output directory
-my $outputDir = $ARGV[1];
+# audio format
+my $audioFormat = "aac";
+
+# audio quality
+my $audioQuality = "320K";
+
+GetOptions ("id=s"      => \$group,
+            "o=s"       => \$outputDir,
+            "f=s"       => \$audioFormat,
+            "q=s"       => \$audioQuality)
+or die("Error in command line arguments\n");
+
+# we need at least a target
+if (!(defined $group)) { usage_string(); }
 
 # generated using http://awpny.com/how-to-facebook-access-token/
 my $access_token = "574534595973161%7CPxhPG_ibsiompEEnGH5g-bQBeh0";
@@ -40,8 +65,6 @@ my @link_array;
 # first page
 my $start_url = "https://graph.facebook.com/$group/feed?fields=link&access_token=$access_token&limit=$limit";
 
-# debug
-#print $start_url . "\n";
 
 my $fbName = fb_name($group);
 print "\nGetting links for \"$fbName\" ...\n\n";
@@ -54,13 +77,12 @@ print "\n";
 # download and convert files
 download_vids(@link_array);
 
-
 print "Done.\n";    # and we're done
 
 ####################################
 
 
-# debug: list of extracted links
+# debug: list of extracted links, maybe incremental downloads in the future?
 sub file_append {
     
     open(OFILE, '>>links.txt');
@@ -81,7 +103,8 @@ sub fb_name {
         return $decoded->{name};
         
     } else {
-        print("\nFailed to get name from facebook-id\n");
+        print $res->status_line . "\n";
+        print("\nFailed to get name from facebook id\n");
         exit(1);
     }
 }
@@ -152,8 +175,10 @@ sub get_links {
 # download and convert all videos
 sub download_vids {
     
+    # constructed youtube-dl call from command-line options
+    
     foreach my $vid_link (@_) {
-        system("youtube-dl -x --audio-format aac --audio-quality 320K -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
+        system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
     }
     
 }
