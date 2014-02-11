@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -20,20 +20,21 @@ my $json = JSON->new->allow_nonref;
 
 
 sub usage_string {
-    print "Usage: " . $0 . " -id <facebook-id>  -o <output-dir>  -f <audio-format>  -q <audio-quality>\
+    print "Usage: " . $0 . " [-o <output-dir>  -f <audio-format>  -q <audio-quality>] <facebook-id>\
     \rSee youtube-dl -h for available formats and qualities.\
-    \rDefault output format is aac and quality 320K, if omitted.\n";
+    \rDefault\tformat:\t\taac\n\tquality:\t320K\n";
     exit(1);
 }
 
-
 sub dbg {
-    print "DEBUG: " . $_[0] . "\n";
+    print "DEBUG: " . $_[0] . "\n" if DEBUG;
 }
 
-sub kill9 {
-    kill 9 => $$;
-}
+
+# not sure how secure it is for this to be public
+my $app_id = "418233354989018";
+my $app_secret = "f1427b29a382c5d30581b8b3ffe1d201";
+
 
 # example groups
 
@@ -43,7 +44,7 @@ sub kill9 {
 #my $group = "108775282491150";
 
 # facebook group or site
-my $group;
+my $group = $ARGV[$#ARGV];
 
 # output directory, default cwd
 my $outputDir = ".";
@@ -55,14 +56,15 @@ my $audioFormat = "aac";
 my $audioQuality = "320K";
 
 # read command line options
-GetOptions ("id=s"      => \$group,
-            "o=s"       => \$outputDir,
-            "f=s"       => \$audioFormat,
-            "q=s"       => \$audioQuality)
+GetOptions ("o=s"        => \$outputDir,
+            "f=s"        => \$audioFormat,
+            "q=s"        => \$audioQuality)
 or die("Error in command line arguments\n");
 
 # we at least need a target
-if (!(defined $group)) { usage_string(); }
+if (!(defined $group)) {
+    usage_string(); 
+}
 
 
 #
@@ -70,14 +72,17 @@ if (!(defined $group)) { usage_string(); }
 #
 sub get_access_token {
     
-    my $req = HTTP::Request->new(GET => "https://graph.facebook.com/oauth/access_token?grant_type=client_credentials&client_id=$_[0]&client_secret=$_[1]");
+    my $query = "https://graph.facebook.com/oauth/access_token?grant_type=client_credentials&client_id=$_[0]&client_secret=$_[1]";
+    my $req = HTTP::Request->new(GET => $query);
     my $res = $ua->request($req);
+    
+        dbg($query);
+
     if ($res->is_success) {
         return $uri->encode((split(/access_token=/, $res->content))[1]);
     } else {
         return 0;
     }
-
 }
 
 # entries per page
@@ -93,20 +98,25 @@ my @link_array;
 ########### MAIN ###############################################################################
 
 # generate token because it changes over time
-my $access_token = get_access_token("418233354989018", "f1427b29a382c5d30581b8b3ffe1d201");
+my $access_token = get_access_token($app_id, $app_secret);
+
+    dbg("Token: " . $access_token);
 
 # first page
 my $start_url = "https://graph.facebook.com/$group/feed?fields=link&access_token=$access_token&limit=$limit";
 
-dbg("Start: " . $start_url) if DEBUG;
+    dbg("Start: " . $start_url);
 
-
+# start out with the fb entity name
 my $fbName = fb_name($group);
-print "\nGetting links for \"$fbName\" ...\n";
+print "\nGetting links for " . colored("\"$fbName\"", "yellow") .  "...\n\n";
 
+print colored("Links: ", "yellow") . colored("0\r", "bright_blue");
 
 # get the video links
+my $n_pages = 0;
 get_links($start_url);
+
 
 # filter duplicate links
 @link_array = keys %{{ map{$_=>1}@link_array}};
@@ -115,6 +125,7 @@ print "\n";
 
 # download and convert files
 download_vids(@link_array);
+
 
 print colored("\nDone.\n\n", "yellow");
 
@@ -136,7 +147,7 @@ sub fb_name {
     my $req = HTTP::Request->new(GET => $query);
 	my $res = $ua->request($req);
     
-    dbg("fb_name: " . $query) if DEBUG;
+        dbg("fb_name: " . $query) if DEBUG;
 
     if ($res->is_success) {
         
@@ -144,7 +155,7 @@ sub fb_name {
         return $decoded->{name};
         
     } else {
-        print $res->status_line . "\n\n" . $res->content . "\n";
+        print "\n" . $res->status_line . "\n" . $res->content . "\n";
         print("\nFailed to get name from facebook id\n");
         exit(1);
     }
@@ -178,6 +189,8 @@ sub get_links {
     
     if ($res->is_success) {
         
+            dbg("\nPages: " . ++$n_pages);
+
         my $decoded = decode_json($res->content);
         
         foreach my $d (@{ $decoded->{data} }) {
@@ -198,9 +211,9 @@ sub get_links {
         my $next = $uri->encode($decoded->{paging}->{next});
         
         if (defined $next) {
-            
+
             # again with next page, maybe in the future we will do something about deep recursion
-            #get_links($next);
+            get_links($next);
         }
 
     # request failed
@@ -233,7 +246,8 @@ sub download_vids {
                 
         # constructed youtube-dl call from cl-options
         my $ret = system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
-        if ($ret == 256) { kill9(); }
+        if ($ret == 256) {  # kill every subprocess
+            kill 9 => $$; }
 
         $n++;
     }
