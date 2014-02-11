@@ -5,8 +5,6 @@ use warnings;
 
 use constant DEBUG => 0;
 
-$SIG{'INT'}  = 'kill9';  #  enhances user experience a bit
-
 use JSON;
 use LWP::UserAgent;
 use URI::Encode;
@@ -34,7 +32,7 @@ sub dbg {
 }
 
 sub kill9 {
-    kill 'KILL', $$
+    kill 9 => $$;
 }
 
 # example groups
@@ -234,7 +232,9 @@ sub download_vids {
         print progress_line($n, $#_);
                 
         # constructed youtube-dl call from cl-options
-        system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
+        my $ret = system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
+        if ($ret == 256) { kill9(); }
+
         $n++;
     }
     
