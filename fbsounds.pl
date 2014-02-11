@@ -11,7 +11,6 @@ use JSON;
 use LWP::UserAgent;
 use URI::Encode;
 use Getopt::Long;
-use Term::Size::Any qw(chars);
 use Data::Dumper;
 use Term::ANSIColor;
 
@@ -215,16 +214,12 @@ sub get_links {
 
 
 sub progress_line {
-
-    my $cols = chars();    # terminal width
     
     my $max = $_[1] + 1;
     my $msg = colored("\n[==========]", "yellow") . 
               colored(" $_[0] / $max ", "bright_blue") . 
               colored("[==========]" , "yellow") . "\n";
-    
-    my $len_msg = length($msg);
-    
+        
     return $msg;
 }
 
@@ -237,9 +232,7 @@ sub download_vids {
         
         # total progress
         print progress_line($n, $#_);
-        
-        #print "******** VIDEO $n of $#_ ********\n";
-        
+                
         # constructed youtube-dl call from cl-options
         system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
         $n++;
