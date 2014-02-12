@@ -27,7 +27,7 @@ sub usage_string {
 }
 
 sub dbg {
-    print "DEBUG: " . $_[0] . "\n" if DEBUG;
+    print colored("DEBUG: ", "red") . colored($_[0], "white") . "\n" if DEBUG;
 }
 
 
@@ -81,7 +81,7 @@ sub get_access_token {
     if ($res->is_success) {
         return $uri->encode((split(/access_token=/, $res->content))[1]);
     } else {
-        return 0;
+        die("Failed to get access token");
     }
 }
 
@@ -190,6 +190,7 @@ sub get_links {
     if ($res->is_success) {
         
             dbg("\nPages: " . ++$n_pages);
+            #dbg($res->content);
 
         my $decoded = decode_json($res->content);
         
