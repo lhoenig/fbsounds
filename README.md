@@ -1,7 +1,9 @@
 fbsounds
 ========
 
-download all youtube videos from a Facebook page or group and convert them to audio files!
+download all youtube videos from a Facebook page or group and convert them to audio files!  
+the current restriction is that this will only work with PUBLIC pages and groups!  
+otherwise, i would need to obtain an user app token. will investigate how to do this.
 
 ### Dependencies  
 - perl  
