@@ -31,11 +31,6 @@ sub dbg {
 }
 
 
-# not sure how secure it is for this to be public
-my $app_id = "418233354989018";
-my $app_secret = "f1427b29a382c5d30581b8b3ffe1d201";
-
-
 # example groups
 
 # the29nov films
@@ -72,14 +67,14 @@ if (!(defined $group)) {
 #
 sub get_access_token {
     
-    my $query = "https://graph.facebook.com/oauth/access_token?grant_type=client_credentials&client_id=$_[0]&client_secret=$_[1]";
+    my $query = "https://fbsounds.triangulum.uberspace.de/cgi-bin/token";
     my $req = HTTP::Request->new(GET => $query);
     my $res = $ua->request($req);
     
-        dbg($query);
+        dbg("token query: " . $query);
 
     if ($res->is_success) {
-        return $uri->encode((split(/access_token=/, $res->content))[1]);
+        return $res->content;
     } else {
         die("Failed to get access token");
     }
@@ -93,22 +88,21 @@ my @link_array;
 
 
 
-
-
 ########### MAIN ###############################################################################
 
 # generate token because it changes over time
-my $access_token = get_access_token($app_id, $app_secret);
+my $access_token = get_access_token();
 
-    dbg("Token: " . $access_token);
+    dbg("token: " . $access_token);
 
 # first page
 my $start_url = "https://graph.facebook.com/$group/feed?fields=link&access_token=$access_token&limit=$limit";
 
     dbg("Start: " . $start_url);
 
-# start out with the fb entity name
+# get the fb entity name
 my $fbName = fb_name($group);
+
 print "\nGetting links for " . colored("\"$fbName\"", "yellow") .  "...\n\n";
 
 print colored("Links: ", "yellow") . colored("0\r", "bright_blue");
@@ -123,11 +117,17 @@ get_links($start_url);
 
 print "\n";
 
-# download and convert files
-download_vids(@link_array);
+if (@link_array) {
+    # download and convert files    
+    download_vids(@link_array);
+
+    print colored("\nDone.\n\n", "yellow");
+} else {
+    print colored("\nNo links found.\n\n", "yellow");
+}
 
 
-print colored("\nDone.\n\n", "yellow");
+
 
 #################################################################################################
 
@@ -147,7 +147,7 @@ sub fb_name {
     my $req = HTTP::Request->new(GET => $query);
 	my $res = $ua->request($req);
     
-        dbg("fb_name: " . $query) if DEBUG;
+        dbg("fb_name query: " . $query) if DEBUG;
 
     if ($res->is_success) {
         
