@@ -21,5 +21,4 @@ IMPORTANT: For audio conversion to work, you have to habe the corresponding audi
 
 ### TODO's  
   
-- better command line options
 - soundcloud downloads :)
