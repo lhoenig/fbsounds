@@ -19,7 +19,7 @@ See youtube-dl -h for available formats and qualities.
 Default format: aac  
        quality: 320K
 
-IMPORTANT: For audio conversion to work, you have to habe the corresponding audio codec library installed for example lame or libvorbis.
+IMPORTANT: For audio conversion to work, you have to habe the corresponding audio codec library installed, for example lame or libvorbis.
 
 ### TODO's  
   
