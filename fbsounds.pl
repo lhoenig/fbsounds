@@ -253,7 +253,9 @@ sub download_vids {
                 
         # constructed youtube-dl call from cl-options
         my $ret = system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
-        
+        # TODO add --no-playlist switch
+
+
         #if ($ret == 256) {  # kill every subprocess
         #    kill 9 => $$; }
         # TODO find better solution (simply ctrl-z ?)
