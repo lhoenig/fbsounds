@@ -64,10 +64,11 @@ if (!(defined $group)) {
 
 #
 # generated using http://awpny.com/how-to-facebook-access-token/
+# anduberspace!
 #
 sub get_access_token {
     
-    my $query = "https://fbsounds.triangulum.uberspace.de/cgi-bin/token";
+    my $query = "https://fbsounds.triangulum.uberspace.de/token";
     my $req = HTTP::Request->new(GET => $query);
     my $res = $ua->request($req);
     
@@ -95,29 +96,33 @@ my $access_token = get_access_token();
 
     dbg("token: " . $access_token);
 
+
 # first page
 my $start_url = "https://graph.facebook.com/$group/feed?fields=link&access_token=$access_token&limit=$limit";
 
     dbg("Start: " . $start_url);
 
+
 # get the fb entity name
 my $fbName = fb_name($group);
 
 print "\nGetting links for " . colored("\"$fbName\"", "yellow") .  "...\n\n";
-
 print colored("Links: ", "yellow") . colored("0\r", "bright_blue");
 
+
 # get the video links
-my $n_pages = 0;
 get_links($start_url);
 
 
 # filter duplicate links
 @link_array = keys %{{ map{$_=>1}@link_array}};
 
-print "\n";
+my $n_links = $#link_array + 1;
+print colored("Links: ", "yellow") . colored("$n_links\r", "bright_blue") . "\n";
 
+# we got some links
 if (@link_array) {
+
     # download and convert files    
     download_vids(@link_array);
 
@@ -189,7 +194,6 @@ sub get_links {
     
     if ($res->is_success) {
         
-            dbg("\nPages: " . ++$n_pages);
             #dbg($res->content);
 
         my $decoded = decode_json($res->content);
@@ -213,7 +217,8 @@ sub get_links {
         
         if (defined $next) {
 
-            # again with next page, maybe in the future we will do something about deep recursion
+            # again with next page, 
+            # maybe in the future we will remove the recursion
             get_links($next);
         }
 
