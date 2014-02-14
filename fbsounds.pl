@@ -173,8 +173,9 @@ sub qualifies {
     my $candidate = $_[0];
     my $res = 0;
     
-    # TODO in the future we will be able to download soundcloud links too
-    
+    # TODO in the future we may be able to download soundcloud links too (quality?)
+    # TODO filter based on minimum quality
+
     my @matches = ("youtu.be",
                    "youtube.com");
     
@@ -252,8 +253,12 @@ sub download_vids {
                 
         # constructed youtube-dl call from cl-options
         my $ret = system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
-        if ($ret == 256) {  # kill every subprocess
-            kill 9 => $$; }
+        
+        #if ($ret == 256) {  # kill every subprocess
+        #    kill 9 => $$; }
+        # TODO find better solution (simply ctrl-z ?)
+
+        # TODO do something with audio files, like tagging, cover etc. 
 
         $n++;
     }
