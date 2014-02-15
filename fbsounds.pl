@@ -175,6 +175,7 @@ sub qualifies {
     
     # TODO in the future we may be able to download soundcloud links too (quality?)
     # TODO filter based on minimum quality
+    # TODO incremental downloads
 
     my @matches = ("youtu.be",
                    "youtube.com");
