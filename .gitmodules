@@ -1,0 +1,8 @@
+[submodule "youtube-dl"]
+	path = youtube-dl
+	url = https://github.com/rg3/youtube-dl
+	branch = master
+[submodule "ffmpeg"]
+	path = ffmpeg
+	url = https://github.com/FFmpeg/FFmpeg
+	branch = master
