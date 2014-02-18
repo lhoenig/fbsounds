@@ -15,11 +15,12 @@ perl will tell you which modules you are missing.
 ### Usage  
 
 `./fbsounds [-o <output-dir>  -f <audio-format>  -q <audio-quality>] <facebook-id>`  
-See youtube-dl -h for available formats and qualities.  
-Default format: aac  
-       quality: 320K
 
-IMPORTANT: For audio conversion to work, you have to habe the corresponding audio codec library installed, for example lame or libvorbis.
+See youtube-dl -h for available formats and qualities.  
+Default format:  aac  
+Default quality: 320K  
+
+IMPORTANT: For audio conversion to work, you have to have the corresponding audio codec library installed, for example lame for mp3 or libvorbis for ogg.
 
 ### TODO's  
   
