@@ -14,22 +14,10 @@ use Term::ANSIColor;
 
 local $| = 1;   # autoflush stdout
 
+# to avoid overhead
 my $ua  = LWP::UserAgent->new;
 my $uri = URI::Encode->new( { encode_reserved => 0 } );
 my $json = JSON->new->allow_nonref;
-
-
-sub usage_string {
-    print "Usage: " . $0 . " [-o <output-dir>  -f <audio-format>  -q <audio-quality>] <facebook-id>\
-    \rSee youtube-dl -h for available formats and qualities.\
-    \rDefault\tformat:\t\taac\n\tquality:\t320K\n";
-    exit(1);
-}
-
-
-sub dbg {
-    print colored("DEBUG: ", "red") . colored($_[0], "white") . "\n" if DEBUG;
-}
 
 
 # facebook group or site
@@ -45,12 +33,11 @@ my $target = $ARGV[$#ARGV];
 # output directory, default cwd
 my $outputDir = ".";
 
-# audio format (youtube-dl)
+# default audio format (youtube-dl)
 my $audioFormat = "best";
 
-# audio quality (youtube-dl)
+# default audio quality (youtube-dl)
 my $audioQuality = "320K";
-
 
 # read command line options
 GetOptions ("o=s"        => \$outputDir,
@@ -68,6 +55,20 @@ my $limit = 100;
 
 # where the links go
 my @link_array;
+
+
+sub usage_string {
+    print "Usage: " . $0 . " [-o <output-dir>  -f <audio-format>  -q <audio-quality>] <facebook-id>\
+    \rSee youtube-dl -h for available formats and qualities.\
+    \rDefault format:\t\t$audioFormat\nDefault quality:\t$audioQuality\n";
+    exit(1);
+}
+
+
+sub dbg {
+    print colored("DEBUG: ", "red") . colored($_[0], "white") . "\n" if DEBUG;
+}
+
 
 # using http://awpny.com/how-to-facebook-access-token/
 # and uberspace.com!
