@@ -21,7 +21,7 @@ my $json = JSON->new->allow_nonref;
 
 
 # facebook group or site
-my $target = $ARGV[$#ARGV];
+my $target;
 
 # example groups
 
@@ -39,11 +39,18 @@ my $audioFormat = "best";
 # default audio quality (youtube-dl)
 my $audioQuality = "320K";
 
+# skip playlists flag
+my $skipPlaylists = 0;
+
 # read command line options
 GetOptions ("o=s"        => \$outputDir,
             "f=s"        => \$audioFormat,
-            "q=s"        => \$audioQuality)
+            "q=s"        => \$audioQuality,
+            "np"         => \$skipPlaylists)
 or die("Error in command line arguments\n");
+
+# now the target is the last argument
+$target = $ARGV[$#ARGV];
 
 # at least we need a target
 if (!(defined $target)) {
@@ -58,7 +65,7 @@ my @link_array;
 
 
 sub usage_string {
-    print "Usage: " . $0 . " [-o <output-dir>  -f <audio-format>  -q <audio-quality>] <facebook-id>\
+    print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality>  -np ] <facebook-id>\
     \rSee youtube-dl -h for available formats and qualities.\
     \rDefault format:\t\t$audioFormat\nDefault quality:\t$audioQuality\n";
     exit(1);
@@ -154,6 +161,7 @@ sub file_append {
     close(OFILE);
 }
 
+
 # get name from fb-id
 sub fb_name {
     
@@ -182,11 +190,14 @@ sub qualifies {
     my $candidate = $_[0];
     my $res = 0;
     
+        dbg($candidate);
+
     # https://github.com/rub1k/fbsounds/issues/10
     # https://github.com/rub1k/fbsounds/issues/9
 
-    my @matches = ("youtu.be",
-                   "youtube.com");
+    my @matches = ("youtu.be/",
+                   "youtube.com/",
+                   "soundcloud.com/");
     
     foreach my $expr (@matches) {
         if (index($candidate, $expr) != -1) {
@@ -263,8 +274,12 @@ sub download_vids {
         # https://github.com/rub1k/fbsounds/issues/1
         # https://github.com/rub1k/fbsounds/issues/2
         # https://github.com/rub1k/fbsounds/issues/6
-        # TODO ignore errors
-        my $ret = system("youtube-dl -i -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
+        my $ret;
+        if ($skipPlaylists) {
+            $ret = system("youtube-dl -i --no-playlist -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");   
+        } else {
+            $ret = system("youtube-dl -i -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");   
+        }
         
         # https://github.com/rub1k/fbsounds/issues/3
         #if ($ret == 256) {  # kill every subprocess
