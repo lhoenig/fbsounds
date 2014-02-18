@@ -26,29 +26,31 @@ sub usage_string {
     exit(1);
 }
 
+
 sub dbg {
     print colored("DEBUG: ", "red") . colored($_[0], "white") . "\n" if DEBUG;
 }
 
 
+# facebook group or site
+my $target = $ARGV[$#ARGV];
+
 # example groups
 
 # the29nov films
-#my $group = "113397788684941";
+#my $target = "113397788684941";
 # the29nov core
-#my $group = "108775282491150";
-
-# facebook group or site
-my $group = $ARGV[$#ARGV];
+#my $target = "108775282491150";
 
 # output directory, default cwd
 my $outputDir = ".";
 
 # audio format (youtube-dl)
-my $audioFormat = "aac";
+my $audioFormat = "best";
 
 # audio quality (youtube-dl)
 my $audioQuality = "320K";
+
 
 # read command line options
 GetOptions ("o=s"        => \$outputDir,
@@ -56,16 +58,19 @@ GetOptions ("o=s"        => \$outputDir,
             "q=s"        => \$audioQuality)
 or die("Error in command line arguments\n");
 
-# we at least need a target
-if (!(defined $group)) {
+# at least we need a target
+if (!(defined $target)) {
     usage_string(); 
 }
 
+# entries per page
+my $limit = 100;
 
-#
-# generated using http://awpny.com/how-to-facebook-access-token/
-# anduberspace!
-#
+# where the links go
+my @link_array;
+
+# using http://awpny.com/how-to-facebook-access-token/
+# and uberspace.com!
 sub get_access_token {
     
     my $query = "https://fbsounds.triangulum.uberspace.de/token";
@@ -81,11 +86,7 @@ sub get_access_token {
     }
 }
 
-# entries per page
-my $limit = 100;
 
-# where the links go
-my @link_array;
 
 
 
@@ -98,27 +99,37 @@ my $access_token = get_access_token();
 
 
 # first page
-my $start_url = "https://graph.facebook.com/$group/feed?fields=link&access_token=$access_token&limit=$limit";
+my $start_url = "https://graph.facebook.com/$target/feed?fields=link&access_token=$access_token&limit=$limit";
 
-    dbg("Start: " . $start_url);
+    dbg("start_url: " . $start_url);
 
 
 # get the fb entity name
-my $fbName = fb_name($group);
+my $fbName = fb_name($target);
 
+    dbg("fb_name: " . $fbName);
+    
 print "\nGetting links for " . colored("\"$fbName\"", "yellow") .  "...\n\n";
-print colored("Links: ", "yellow") . colored("0\r", "bright_blue");
+print "Links: " . colored("0\r", "bold green");
 
 
-# get the video links
-get_links($start_url);
+# get the video links, starting from first page
+my $next_page = $start_url;
+while ($next_page = get_links($next_page)) {}
+
 
 
 # filter duplicate links
 @link_array = keys %{{ map{$_=>1}@link_array}};
 
+
+# https://github.com/rub1k/fbsounds/issues/7
+
+
+# final output of number of extracted links
 my $n_links = $#link_array + 1;
-print colored("Links: ", "yellow") . colored("$n_links\r", "bright_blue") . "\n";
+print "Links: " . colored("$n_links\r", "bold green") . "\n";
+
 
 # we got some links
 if (@link_array) {
@@ -130,9 +141,6 @@ if (@link_array) {
 } else {
     print colored("\nNo links found.\n\n", "yellow");
 }
-
-
-
 
 #################################################################################################
 
@@ -173,9 +181,8 @@ sub qualifies {
     my $candidate = $_[0];
     my $res = 0;
     
-    # TODO in the future we may be able to download soundcloud links too (quality?)
-    # TODO filter based on minimum quality
-    # TODO incremental downloads
+    # https://github.com/rub1k/fbsounds/issues/10
+    # https://github.com/rub1k/fbsounds/issues/9
 
     my @matches = ("youtu.be",
                    "youtube.com");
@@ -210,18 +217,17 @@ sub get_links {
                 # add to download queue
                 push(@link_array, $link);
                 
-                # inform of progress
-                print colored("Links: ", "yellow") . colored("$#link_array\r", "bright_blue");
+                # show progress
+                print "Links: " . colored("$#link_array\r", "bold green");
               }
         }
         
         my $next = $uri->encode($decoded->{paging}->{next});
         
         if (defined $next) {
-
-            # again with next page, 
-            # maybe in the future we will remove the recursion
-            get_links($next);
+            return $next;
+        } else {
+            return 0;   # there is no next page
         }
 
     # request failed
@@ -231,7 +237,8 @@ sub get_links {
     }
 }
 
-
+# colored total progress line
+# arguments: current vid, total number of vids
 sub progress_line {
     
     my $max = $_[1] + 1;
@@ -243,7 +250,7 @@ sub progress_line {
 }
 
 
-# download and convert all videos
+# download and convert all videos using youtube-dl
 sub download_vids {
     
     my $n = 1;
@@ -252,18 +259,17 @@ sub download_vids {
         print progress_line($n, $#_);
         
         # constructed youtube-dl call
-        # TODO add --no-playlist switch
-        # TODO NO- pass all arguments to youtube-dl
-        # Maybe i should rather contribute to the Facebook extractor of youtube-dl after all
+        # https://github.com/rub1k/fbsounds/issues/1
+        # https://github.com/rub1k/fbsounds/issues/2
+        # https://github.com/rub1k/fbsounds/issues/6
         # TODO ignore errors
-        my $ret = system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
+        my $ret = system("youtube-dl -i -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
         
+        # https://github.com/rub1k/fbsounds/issues/3
         #if ($ret == 256) {  # kill every subprocess
         #    kill 9 => $$; }
-        # TODO find better solution (simply ctrl-z ?)
-
-        # TODO do something with audio files, like tagging, cover etc. 
-        # http://search.cpan.org/~szabgab/WebService-GData-0.06/lib/WebService/GData/YouTube.pm
+        
+        # https://github.com/rub1k/fbsounds/issues/8 (tagging files)
 
         $n++;
     }
