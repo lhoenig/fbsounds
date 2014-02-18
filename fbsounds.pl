@@ -249,19 +249,21 @@ sub download_vids {
     my $n = 1;
     foreach my $vid_link (@_) {
         
-        # total progress
         print progress_line($n, $#_);
-                
-        # constructed youtube-dl call from cl-options
-        my $ret = system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
+        
+        # constructed youtube-dl call
         # TODO add --no-playlist switch
-
-
+        # TODO NO- pass all arguments to youtube-dl
+        # Maybe i should rather contribute to the Facebook extractor of youtube-dl after all
+        # TODO ignore errors
+        my $ret = system("youtube-dl -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");
+        
         #if ($ret == 256) {  # kill every subprocess
         #    kill 9 => $$; }
         # TODO find better solution (simply ctrl-z ?)
 
         # TODO do something with audio files, like tagging, cover etc. 
+        # http://search.cpan.org/~szabgab/WebService-GData-0.06/lib/WebService/GData/YouTube.pm
 
         $n++;
     }
