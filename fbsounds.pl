@@ -190,7 +190,7 @@ sub qualifies {
     my $candidate = $_[0];
     my $res = 0;
     
-        dbg($candidate);
+        #dbg($candidate);
 
     # https://github.com/rub1k/fbsounds/issues/10
     # https://github.com/rub1k/fbsounds/issues/9
