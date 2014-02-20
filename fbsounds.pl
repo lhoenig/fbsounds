@@ -322,7 +322,6 @@ sub download_vids {
         print progress_line($n, $#_);
         
         # constructed youtube-dl call
-        # https://github.com/rub1k/fbsounds/issues/1
         # https://github.com/rub1k/fbsounds/issues/2
         # https://github.com/rub1k/fbsounds/issues/6
 
@@ -334,13 +333,21 @@ sub download_vids {
                 dbg($ret);
 
             if ($ret == 0) {
-                # dont touch it on next run
+                # dont touch it next time
                 history_add($vid_link);
             }
 
         } else {
             
             $ret = system("youtube-dl -i -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");   
+        
+                dbg($ret);
+
+            if ($ret == 0) {
+                # dont touch next time
+                history_add($vid_link);
+            }
+
         }
         
         # https://github.com/rub1k/fbsounds/issues/8 (tagging files)
