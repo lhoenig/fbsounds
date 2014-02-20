@@ -14,7 +14,8 @@ use JSON;
 
 local $| = 1;   # autoflush stdout
 
-# to avoid overhead
+
+# global copies
 my $ua  = LWP::UserAgent->new;
 my $uri = URI::Encode->new( { encode_reserved => 0 } );
 my $json = JSON->new->allow_nonref;
@@ -108,9 +109,8 @@ sub get_access_token {
 
 
 
+########### MAIN #######################################################################################
 
-
-########### MAIN ###############################################################################
 
 # generate token because it changes over time
 my $access_token = get_access_token();
@@ -162,7 +162,8 @@ if (@link_array) {
     print colored("\nNo links found.\n\n", "yellow");
 }
 
-#################################################################################################
+
+#########################################################################################################
 
 
 
@@ -258,7 +259,6 @@ sub get_links {
     
     my $req = HTTP::Request->new(GET => $_[0]);
 	my $res = $ua->request($req);
-    
     if ($res->is_success) {
         
             #dbg($res->content);
@@ -270,14 +270,13 @@ sub get_links {
             my $link = $d->{link};
             if (defined $link && qualifies($link)) {
                 
-                if ($nMax == ($#link_array + 1)) {       # specified maximum reached
+                if ($nMax && ($nMax == ($#link_array + 1))) {       # specified maximum reached
                     return 0;
                 } else {
                     push(@link_array, $link);                    
                 }
                 
-                # show progress
-                print "Links: " . colored("$#link_array\r", "bold green");
+                print "Links: " . colored("$#link_array\r", "bold green");     # show progress
               }
         }
         
