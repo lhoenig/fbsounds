@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+package fbsounds;
+
 use strict;
 use warnings;
 
@@ -49,7 +51,7 @@ my $skipPlaylists = 0;
 
 
 # maximum number of videos to download
-my $nMax = 0;
+my $vMax = 0;
 
 
 # entries per page
@@ -64,15 +66,21 @@ my @link_array;
 GetOptions ("o=s"        => \$outputDir,
             "f=s"        => \$audioFormat,
             "q=s"        => \$audioQuality,
-            "np"         => \$skipPlaylists,
-            "n=i"        => \$nMax)
+            "np"         => \$skipPlaylists,    # youtube-dl follows them by default
+            "n=i"        => \$vMax)             # can be used to "head-download"
 or die("Error in command line arguments\n");
+
+    dbg(Dumper(@ARGV));
 
 # now target is the last argument
 $target = $ARGV[$#ARGV];
 
 unless (defined $target) {
     usage_string(); 
+}
+
+unless (defined $outputDir) {
+    $outputDir = fb_name($target);
 }
 
 # print usage and exit 1
@@ -91,7 +99,7 @@ sub dbg {
 
 
 # using http://awpny.com/how-to-facebook-access-token/
-# and uberspace.com!
+# and uberspace.de!
 sub get_access_token {
     
     my $query = "https://fbsounds.triangulum.uberspace.de/token";
@@ -270,7 +278,7 @@ sub get_links {
             my $link = $d->{link};
             if (defined $link && qualifies($link)) {
                 
-                if ($nMax && ($nMax == ($#link_array + 1))) {       # specified maximum reached
+                if ($vMax && ($vMax == ($#link_array + 1))) {       # specified maximum reached
                     return 0;
                 } else {
                     push(@link_array, $link);                    
