@@ -306,7 +306,7 @@ sub progress_line {
     my $msg = colored("\n[==========]", "yellow") . 
               colored(" $_[0] / $max ", "bright_blue") . 
               colored("[==========]" , "yellow") . "\n";
-        
+    
     return $msg;
 }
 
@@ -342,10 +342,6 @@ sub download_vids {
             
             $ret = system("youtube-dl -i -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");   
         }
-        
-        # https://github.com/rub1k/fbsounds/issues/3
-        #if ($ret == 256) {  # kill every subprocess
-        #    kill 9 => $$; }
         
         # https://github.com/rub1k/fbsounds/issues/8 (tagging files)
 
