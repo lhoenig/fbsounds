@@ -5,12 +5,12 @@ use warnings;
 
 use constant DEBUG => 0;
 
-use JSON;
+use Term::ANSIColor;
 use LWP::UserAgent;
-use URI::Encode;
 use Getopt::Long;
 use Data::Dumper;
-use Term::ANSIColor;
+use URI::Encode;
+use JSON;
 
 local $| = 1;   # autoflush stdout
 
@@ -30,42 +30,54 @@ my $target;
 # the29nov core
 #my $target = "108775282491150";
 
+
 # output directory, default cwd
 my $outputDir = ".";
+
 
 # default audio format (youtube-dl)
 my $audioFormat = "best";
 
+
 # default audio quality (youtube-dl)
 my $audioQuality = "320K";
+
 
 # skip playlists flag
 my $skipPlaylists = 0;
 
-# read command line options
-GetOptions ("o=s"        => \$outputDir,
-            "f=s"        => \$audioFormat,
-            "q=s"        => \$audioQuality,
-            "np"         => \$skipPlaylists)
-or die("Error in command line arguments\n");
 
-# now the target is the last argument
-$target = $ARGV[$#ARGV];
+# maximum number of videos to download
+my $nMax = 0;
 
-# at least we need a target
-if (!(defined $target)) {
-    usage_string(); 
-}
 
 # entries per page
 my $limit = 100;
+
 
 # where the links go
 my @link_array;
 
 
+# process command line options
+GetOptions ("o=s"        => \$outputDir,
+            "f=s"        => \$audioFormat,
+            "q=s"        => \$audioQuality,
+            "np"         => \$skipPlaylists,
+            "n=i"        => \$nMax)
+or die("Error in command line arguments\n");
+
+# now target is the last argument
+$target = $ARGV[$#ARGV];
+
+unless (defined $target) {
+    usage_string(); 
+}
+
+# print usage and exit 1
 sub usage_string {
-    print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality>  -np ] <facebook-id>\
+    
+    print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max downloads>  -np ] <facebook-id>\
     \rSee youtube-dl -h for available formats and qualities.\
     \rDefault format:\t\t$audioFormat\nDefault quality:\t$audioQuality\n";
     exit(1);
@@ -153,13 +165,41 @@ if (@link_array) {
 #################################################################################################
 
 
-# debug: list of extracted links, maybe incremental downloads in the future?
-sub file_append {
+
+
+
+# add link to link file for facebook id if not already present
+sub history_add {
     
-    open(OFILE, '>>links.txt');
-    print OFILE $_[0] . "\n";
-    close(OFILE);
+    my $fname = "$ENV{HOME}/.fbsounds/.$target.links";    
+    my $content = "";
+
+    # when fbsounds runs for the first time, it creates a conf folder in the home directory
+    if (!(-e "$ENV{HOME}/.fbsounds/")) {
+        mkdir("$ENV{HOME}/.fbsounds") or die "could not create directory $ENV{HOME}/.fbsounds: $? $@";       
+    }
+
+    # read the whole file into $content
+    open(my $fh, '+>>', $fname) or die "cannot open file $fname";
+        # seeking to avoid double-opening
+        seek($fh, 0, 0);
+        while (<$fh>) {
+            $content .= $_;
+    }
+     
+        dbg($content);
+
+    # append to links file if not found 
+    seek($fh, 0, 2);
+    if (!($content =~ /$_[0]/)) {
+        dbg("Link $_[0] not found in \n$content\n");
+        print $fh $_[0] . "\n";
+    }
+
+    close($fh); 
 }
+
+
 
 
 # get name from fb-id
@@ -178,10 +218,13 @@ sub fb_name {
         
     } else {
         print "\n" . $res->status_line . "\n" . $res->content . "\n";
-        print("\nFailed to get name from facebook id\n");
+        print("\nFailed to get name from facebook id $_[0]\n");
         exit(1);
     }
 }
+
+
+
 
 
 # check if link is downloadable
@@ -190,8 +233,6 @@ sub qualifies {
     my $candidate = $_[0];
     my $res = 0;
     
-        #dbg($candidate);
-
     # https://github.com/rub1k/fbsounds/issues/10
     # https://github.com/rub1k/fbsounds/issues/9
 
@@ -206,6 +247,11 @@ sub qualifies {
     }
     return $res;
 }
+
+
+
+
+
 
 # get links from facebook graph api
 sub get_links {
@@ -224,10 +270,11 @@ sub get_links {
             my $link = $d->{link};
             if (defined $link && qualifies($link)) {
                 
-                #file_append($link);
-                
-                # add to download queue
-                push(@link_array, $link);
+                if ($nMax == ($#link_array + 1)) {       # specified maximum reached
+                    return 0;
+                } else {
+                    push(@link_array, $link);                    
+                }
                 
                 # show progress
                 print "Links: " . colored("$#link_array\r", "bold green");
@@ -249,6 +296,9 @@ sub get_links {
     }
 }
 
+
+
+
 # colored total progress line
 # arguments: current vid, total number of vids
 sub progress_line {
@@ -260,6 +310,8 @@ sub progress_line {
         
     return $msg;
 }
+
+
 
 
 # download and convert all videos using youtube-dl
@@ -274,10 +326,21 @@ sub download_vids {
         # https://github.com/rub1k/fbsounds/issues/1
         # https://github.com/rub1k/fbsounds/issues/2
         # https://github.com/rub1k/fbsounds/issues/6
+
         my $ret;
         if ($skipPlaylists) {
+            
             $ret = system("youtube-dl -i --no-playlist -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");   
+            
+                dbg($ret);
+
+            if ($ret == 0) {
+                # dont touch it on next run
+                history_add($vid_link);
+            }
+
         } else {
+            
             $ret = system("youtube-dl -i -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");   
         }
         
