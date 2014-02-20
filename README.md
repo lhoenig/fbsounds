@@ -1,7 +1,7 @@
 fbsounds
 ========
 
-A script to download certain (**youtube, soundcloud atm**) videos from a Facebook page or group and extract the audio! 
+A script to download certain (**youtube, soundcloud** as of now) videos from a Facebook page or group and extract the audio! 
 The biggest restriction is that this will ONLY work with **PUBLIC pages and groups**!  
 Otherwise, i would need to obtain an user app token. I will investigate how to do this.
 
