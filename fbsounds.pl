@@ -146,7 +146,7 @@ my $fbName = fb_name($target);
 
     dbg("fb_name: " . $fbName);
     
-print "\nGetting links for " . colored("\"$fbName\"", "yellow") .  "...\n\n";
+print "\nGetting links for " . colored("\"$fbName\"", "yellow") .  " ...\n\n";
 print "Links: " . colored("0\r", "bold green");
 
 
@@ -157,9 +157,6 @@ while ($next_page = get_links($next_page)) {}
 
 # filter duplicate links
 @link_array = keys %{{ map{$_=>1}@link_array}};
-
-
-# https://github.com/rub1k/fbsounds/issues/7
 
 
 # final output before downloading
@@ -189,34 +186,36 @@ sub history_add {
     my $fname = "$ENV{HOME}/.fbsounds/.$target.links";    
     my $content = "";
 
-    # when fbsounds runs for the first time, it creates a conf folder in the home directory
+    # when fbsounds runs for the first time, it creates a .fbsounds folder in ~/
     if (!(-e "$ENV{HOME}/.fbsounds/")) {
         mkdir("$ENV{HOME}/.fbsounds") or die "could not create directory $ENV{HOME}/.fbsounds: $? $@";       
     }
 
     # read the whole file into $content
-    open(my $fh, '+>>', $fname) or die "cannot open file $fname";
-        # seeking to avoid double-opening
+        open(my $fh, '+>>', $fname) or die "cannot open file $fname";
+        
+        # seek to beginning, because atm $fh points to EOF
         seek($fh, 0, 0);
-        while (<$fh>) {
-            $content .= $_;
-    }
-     
-        dbg($content);
+        
+        # now read from it
+        while (<$fh>) { $content .= $_; }
 
     # append to links file if not found 
-    seek($fh, 0, 2);
-    if (!($content =~ /$_[0]/)) {
-        dbg("Link $_[0] not found in \n$content\n");
-        print $fh $_[0] . "\n";
-    }
+        
+        # seek to EOF (append)   
+        seek($fh, 0, 2);
+        
+        if (!($content =~ /$_[0]/)) {    
+            dbg("Link $_[0] not found, appending to links file\n");
+            print $fh $_[0] . "\n";
+        }
 
     close($fh); 
 }
 
 
 
-# get name from fb-id
+# get name field from facebook id
 sub fb_name {
     
     my $query = "https://graph.facebook.com/$_[0]?fields=name&access_token=$access_token";
@@ -306,7 +305,7 @@ sub get_links {
 
 
 # colored total progress line
-# arguments: current vid, total number of vids
+# arguments: current vids, total number of vids
 sub progress_line {
     
     my $max = $_[1] + 1;
@@ -344,10 +343,10 @@ sub download_vids {
 
         $ret = system($call);   
         
-            dbg("ytdl $? = " . $ret);
+            dbg("return code of youtube-dl: " . $ret);
 
         if ($ret == 0) {
-            # skip it next time
+            # download successfull, add to history
             history_add($vid_link);
         }
         
