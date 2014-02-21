@@ -20,7 +20,7 @@ If you have cpan, run `sudo ./deps.sh` from the reposity. This will install all 
   
 Where `--np` stands for skip playlists.  
 With `--ytdl "ARGS"` you can add custom arguments to youtube-dl. Wrap them in parentheses.  
-See youtube-dl -h for available formats, qualities and other options.  
+See `youtube-dl -h` for available formats, qualities and other options.  
 Default format:  **best**  
 Default quality: **320K**  
 
