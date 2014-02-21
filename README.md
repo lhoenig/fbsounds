@@ -14,7 +14,7 @@ If you have cpan, run `sudo ./deps.sh` from the reposity. This will install all 
 
 ## Usage  
 
-`./fbsounds [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max-downloads> --np ] <facebook-id>`  
+`./fbsounds [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max-downloads> --np --ytdl "args" ] <facebook-id>`  
   
 Where `--np` stands for skip playlists.  
 See youtube-dl -h for available formats and qualities.  
