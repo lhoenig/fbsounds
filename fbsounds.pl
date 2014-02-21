@@ -34,8 +34,8 @@ my $target;
 #my $target = "108775282491150";
 
 
-# output directory, default cwd
-my $outputDir = ".";
+# output directory
+my $outputDir;
 
 
 # default audio format (youtube-dl)
@@ -62,12 +62,17 @@ my $limit = 100;
 my @link_array;
 
 
+# additional youtube-dl args
+my $dl_args = "";
+
+
 # process command line options
 GetOptions ("o=s"        => \$outputDir,
             "f=s"        => \$audioFormat,
             "q=s"        => \$audioQuality,
             "np"         => \$skipPlaylists,    # youtube-dl follows them by default
-            "n=i"        => \$vMax)             # can be used to "head-download"
+            "n=i"        => \$vMax,            # can be used to "head-download"
+            "ytdl=s"     => \$dl_args)
 or die("Error in command line arguments\n");
 
     dbg(Dumper(@ARGV));
@@ -79,14 +84,25 @@ unless (defined $target) {
     usage_string(); 
 }
 
+
+# generate token because it changes over time
+my $access_token = get_access_token();
+
+    dbg("token: " . $access_token);
+
+
 unless (defined $outputDir) {
-    $outputDir = fb_name($target);
+    # replace non-ascii chars with _
+    my $name = fb_name($target);
+    $name =~ s/[^[:ascii:]]/_/g;
+    $outputDir = $name;
 }
+
 
 # print usage and exit 1
 sub usage_string {
     
-    print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max downloads>  -np ] <facebook-id>\
+    print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max downloads>  --np --ytdl=\"args\" ] <facebook-id>\
     \rSee youtube-dl -h for available formats and qualities.\
     \rDefault format:\t\t$audioFormat\nDefault quality:\t$audioQuality\n";
     exit(1);
@@ -120,12 +136,6 @@ sub get_access_token {
 ########### MAIN #######################################################################################
 
 
-# generate token because it changes over time
-my $access_token = get_access_token();
-
-    dbg("token: " . $access_token);
-
-
 # first page
 my $start_url = "https://graph.facebook.com/$target/feed?fields=link&access_token=$access_token&limit=$limit";
 
@@ -146,7 +156,6 @@ my $next_page = $start_url;
 while ($next_page = get_links($next_page)) {}
 
 
-
 # filter duplicate links
 @link_array = keys %{{ map{$_=>1}@link_array}};
 
@@ -154,15 +163,14 @@ while ($next_page = get_links($next_page)) {}
 # https://github.com/rub1k/fbsounds/issues/7
 
 
-# final output of number of extracted links
+# final output before downloading
 my $n_links = $#link_array + 1;
 print "Links: " . colored("$n_links\r", "bold green") . "\n";
 
 
-# we got some links
-if (@link_array) {
+if (@link_array) {      # we got some links
 
-    # download and convert files    
+    # download and convert to audio
     download_vids(@link_array);
 
     print colored("\nDone.\n\n", "yellow");
@@ -172,7 +180,6 @@ if (@link_array) {
 
 
 #########################################################################################################
-
 
 
 
@@ -210,7 +217,6 @@ sub history_add {
 
 
 
-
 # get name from fb-id
 sub fb_name {
     
@@ -234,8 +240,6 @@ sub fb_name {
 
 
 
-
-
 # check if link is downloadable
 sub qualifies {
     
@@ -256,9 +260,6 @@ sub qualifies {
     }
     return $res;
 }
-
-
-
 
 
 
@@ -334,33 +335,26 @@ sub download_vids {
         # https://github.com/rub1k/fbsounds/issues/6
 
         my $ret;
+        my $call;
         if ($skipPlaylists) {
             
-            $ret = system("youtube-dl -i --no-playlist -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");   
-            
-                dbg($ret);
-
-            if ($ret == 0) {
-                # dont touch it next time
-                history_add($vid_link);
-            }
-
+            $call = "youtube-dl " . $dl_args . " -i --no-playlist -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"";
         } else {
             
-            $ret = system("youtube-dl -i -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"");   
+            $call = "youtube-dl " . $dl_args . " -i -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"";
+        }
+
+        $ret = system($call);   
         
-                dbg($ret);
+            dbg("ytdl $? = " . $ret);
 
-            if ($ret == 0) {
-                # dont touch next time
-                history_add($vid_link);
-            }
-
+        if ($ret == 0) {
+            # skip it next time
+            history_add($vid_link);
         }
         
         # https://github.com/rub1k/fbsounds/issues/8 (tagging files)
 
         $n++;
     }
-    
 }
