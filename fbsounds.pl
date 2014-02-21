@@ -71,11 +71,9 @@ GetOptions ("o=s"        => \$outputDir,
             "f=s"        => \$audioFormat,
             "q=s"        => \$audioQuality,
             "np"         => \$skipPlaylists,    # youtube-dl follows them by default
-            "n=i"        => \$vMax,            # can be used to "head-download"
+            "n=i"        => \$vMax,             # can be used to "head-download"
             "ytdl=s"     => \$dl_args)
 or die("Error in command line arguments\n");
-
-    dbg(Dumper(@ARGV));
 
 # now target is the last argument
 $target = $ARGV[$#ARGV];
@@ -105,6 +103,7 @@ sub usage_string {
     print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max downloads>  --np --ytdl \"args\" ] <facebook-id>\
     \rSee youtube-dl -h for available formats and qualities.\
     \rDefault format:\t\t$audioFormat\nDefault quality:\t$audioQuality\n";
+    
     exit(1);
 }
 
@@ -297,8 +296,7 @@ sub get_links {
             return 0;   # there is no next page
         }
 
-    # request failed
-    } else {
+    } else {  # request failed
         print $res->status_line . "\n";
 		exit(1);
     }
