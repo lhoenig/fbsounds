@@ -3,7 +3,7 @@ fbsounds
 
 A perl script to download **YouTube, Soundcloud** (as of now) videos from a Facebook page or group and extract the audio! 
   
-This is useful for building a massive trackbase, as many music-focused Facebook pages / groups have thousands of links eligible for this batch method!
+This is useful for building a massive trackbase, as many music-focused Facebook pages / groups have thousands of links eligible for this batch method!  
 The biggest restriction is that this will ONLY work with **PUBLIC pages and groups!**  
 Otherwise, I would need to obtain an user app token. I will investigate about this.
 
