@@ -10,4 +10,4 @@ fi
 # install perl dependency modules
 
 PERL_MM_USE_DEFAULT=1; 
-sudo perl -MCPAN -e 'install JSON, Term::ANSIColor, LWP::UserAgent, Getopt::Long, URI::Encode;'
+sudo perl -MCPAN -e 'install JSON, Term::ANSIColor, LWP::UserAgent, LWP::Protocol::https, Getopt::Long, URI::Encode;'
