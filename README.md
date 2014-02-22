@@ -9,8 +9,8 @@ Otherwise, I would need to obtain an user app token. I will investigate about th
 
 ## Dependencies  
 - perl  
-- ffmpeg  
-- youtube-dl **(Python)**  
+- [ffmpeg](https://github.com/FFmpeg/FFmpeg)  
+- [youtube-dl](https://github.com/rg3/youtube-dl) **(Python)**  
 
 If you have cpan, run `sudo ./deps.sh` from the reposity. This will install all required pods. Otherwise, you will have to download and install them manually from [CPAN](https://www.cpan.org).
 
