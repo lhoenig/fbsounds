@@ -128,7 +128,7 @@ sub get_access_token {
     if ($res->is_success) {
         return $res->content;
     } else {
-        die("Failed to get access token");
+        die("Failed to get access token: " . $res->status_line);
     }
 }
 
