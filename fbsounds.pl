@@ -79,7 +79,7 @@ or die("Error in command line arguments\n");
 $target = $ARGV[$#ARGV];
 
 unless (defined $target) {
-    usage_string(); 
+    usage(); 
 }
 
 
@@ -98,7 +98,7 @@ unless (defined $outputDir) {
 
 
 # print usage and exit 1
-sub usage_string {
+sub usage {
     
     print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max downloads>  -np -ytdl \"args\" ] <facebook-id>\
     \rSee youtube-dl -h for available formats and qualities.\
