@@ -61,6 +61,8 @@ my $limit = 100;
 # where the links go
 my @link_array;
 
+# failed to download those
+my @failed_vids;
 
 # additional youtube-dl args
 my $dl_args = "";
@@ -168,6 +170,10 @@ if (@link_array) {      # we got some links
 
     # download and convert to audio
     download_vids(@link_array);
+    
+    if (@failed_vids) {
+        download_vids(@failed_vids);   # try again once
+    }
 
     print colored("\nDone.\n\n", "yellow");
 } else {
@@ -348,6 +354,8 @@ sub download_vids {
         if ($ret == 0) {
             # download successfull, add to history
             history_add($vid_link);
+        } else {
+            push(@failed_vids, $vid_link);
         }
         
         # https://github.com/rub1k/fbsounds/issues/8 (tagging files)
