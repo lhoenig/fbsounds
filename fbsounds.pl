@@ -334,9 +334,6 @@ sub download_vids {
         print progress_line($n, $#_);
         
         # constructed youtube-dl call
-        # https://github.com/rub1k/fbsounds/issues/2
-        # https://github.com/rub1k/fbsounds/issues/6
-
         my $ret;
         my $call;
         if ($skipPlaylists) {
