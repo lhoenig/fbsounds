@@ -16,10 +16,10 @@ If you have cpan, run `sudo ./deps.sh` from the reposity. This will install all 
 
 ## Usage  
    
-`./fbsounds [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max-downloads> --np --ytdl "args" ] <facebook-id>`  
+`./fbsounds [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max-downloads> -np -ytdl "args" ] <facebook-id>`  
   
-Where `--np` stands for skip playlists.  
-With `--ytdl "ARGS"` you can add custom arguments to youtube-dl. Wrap them in parentheses.  
+Where `-np` stands for "skip YouTube playlists".  
+With `-ytdl "args"` you can add custom arguments to youtube-dl. Wrap them in parentheses.  
 See `youtube-dl -h` for available formats, qualities and other options.  
 Default format:  **best**  
 Default quality: **320K**  
