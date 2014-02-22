@@ -75,7 +75,7 @@ GetOptions ("o=s"        => \$outputDir,
             "ytdl=s"     => \$dl_args)
 or die("Error in command line arguments\n");
 
-# now target is the last argument
+# now target is the only argument
 $target = $ARGV[$#ARGV];
 
 unless (defined $target) {
