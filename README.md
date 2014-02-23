@@ -29,3 +29,8 @@ Default quality: **320K**
 To halt the script while downloading, hit **CTRL-Z** for a SIGKILL.
 
 **IMPORTANT:** For audio conversion to work, you must have the corresponding audio codec library installed, for example lame for mp3 and libvorbis for ogg.  
+  
+## Contribution  
+  
+To get your local copy with all the **submodules**, run:  
+`git clone --recursive https://github.com/rub1k/fbsounds.git`  
