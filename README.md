@@ -11,8 +11,10 @@ Otherwise, I would need to obtain an user app token. I will investigate about th
 - perl  
 - [ffmpeg](https://github.com/FFmpeg/FFmpeg)  
 - [youtube-dl](https://github.com/rg3/youtube-dl) **(Python)**  
+  
+**fbsounds now comes with the deps/ folder to make installation of dependecies as easy as possible!**
 
-If you have cpan, run `sudo ./deps.sh` from the reposity. This will install all required pods. Otherwise, you will have to download and install them manually from [CPAN](https://www.cpan.org).
+If you have cpan, run `sudo ./deps/deps.sh` from the repository. This will install all required dependencies.   Otherwise, you will have to download and install them manually from [CPAN](https://www.cpan.org).
 
 ## Usage  
    
