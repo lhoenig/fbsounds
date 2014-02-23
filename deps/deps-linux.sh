@@ -7,18 +7,20 @@ if [[ $EUID -ne 0 ]]; then
    exit 1;
 fi
 
-
 # without this, LWP::UserAgent doesn't work on linux
 if [[ `uname` == "Linux" ]]; then
 	if [[ `which apt-get` ]]; then
+		echo "Installing libssl-dev ..."
 		sudo apt-get install libssl-dev;
+	
+		echo "Installing all other dependencies ..."
+		sudo apt-get install ffmpeg libmp3lame-dev youtube-dl;
 	else 
 		# at least on Linux it failed without libssl-dev
 		echo "This is Linux and apt-get is not available, which is needed for libssl-dev, which is needed for LWP::Protocol::https. Exiting.";
 		exit 1;
 	fi
 fi
-
 
 # default answers to questions
 PERL_MM_USE_DEFAULT=1;
