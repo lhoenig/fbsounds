@@ -15,7 +15,7 @@ Otherwise, I would need to obtain an user app token, im not entirely sure. I wil
 - [ffmpeg](https://github.com/FFmpeg/FFmpeg)  
 - [youtube-dl](https://github.com/rg3/youtube-dl) **(Python)**  
   
-If you have cpan, run `sudo ./deps/deps.sh` from the repository. This will install all required dependencies.   Otherwise, you will have to download and install them manually from [CPAN](https://www.cpan.org).
+If you have cpan, run `sudo deps/deps.sh` from the repository. This will install all required dependencies.   Otherwise, you will have to download and install them manually from [CPAN](https://www.cpan.org).
 
 ## Usage  
    
