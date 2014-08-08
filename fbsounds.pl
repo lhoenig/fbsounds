@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use constant DEBUG => 0;
+use constant LIMIT => 100;
 
 use Term::ANSIColor;
 use LWP::UserAgent;
@@ -37,93 +38,92 @@ my $target;
 # output directory
 my $outputDir;
 
-
 # default audio format (youtube-dl)
 my $audioFormat = "best";
 
-
 # default audio quality (youtube-dl)
-my $audioQuality = "320K";
+my $audioQuality = "0";
 
-
-# skip playlists flag
+# skip yt playlists flag
 my $skipPlaylists = 0;
-
 
 # maximum number of videos to download
 my $vMax = 0;
 
-
-# entries per page
-my $limit = 100;
-
-
 # where the links go
 my @link_array;
 
-# failed to download those
+# videos who exited abnormally
 my @failed_vids;
 
-# additional youtube-dl args
+# additional youtube-dl args provided by -ytdl
 my $dl_args = "";
 
+my $retry = 0;
 
 # process command line options
 GetOptions ("o=s"        => \$outputDir,
-            "f=s"        => \$audioFormat,
-            "q=s"        => \$audioQuality,
-            "np"         => \$skipPlaylists,    # youtube-dl follows them by default
-            "n=i"        => \$vMax,             # can be used to "head-download"
-            "ytdl=s"     => \$dl_args)
+            "f=s"        => \$audioFormat,      # yt-dl audio format
+            "q=s"        => \$audioQuality,     # yt-dl audio quality
+            "sp"         => \$skipPlaylists,    # youtube-dl follows them by default
+            "n=i"        => \$vMax,             # can be used to the head of a feed
+            "ytdl=s"     => \$dl_args,          # arguments passed to yt-dl
+            "r"          => \$retry)            # retry once if errors occured while downloading
 or die("Error in command line arguments\n");
 
 # now target is the only argument
-$target = $ARGV[$#ARGV];
+$target = $ARGV[0];
 
 unless (defined $target) {
     usage(); 
 }
 
 
-# generate token because it changes over time
+
+# generate token everytime as it changes with time
 my $access_token = get_access_token();
 
-    dbg("token: " . $access_token);
+dbg("access_token: " . $access_token);
 
 
+
+# if output is omitted, set to fb entity name
 unless (defined $outputDir) {
+
     # replace non-ascii chars with _
     my $name = fb_name($target);
     $name =~ s/[^[:ascii:]]/_/g;
+    
     $outputDir = $name;
 }
 
 
-# print usage and exit 1
+
+# print usage, exit 1
 sub usage {
-    
-    print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max downloads>  -np -ytdl \"args\" ] <facebook-id>\
-    \rSee youtube-dl -h for available formats and qualities.\
-    \rDefault format:\t\t$audioFormat\nDefault quality:\t$audioQuality\n";
-    
+
+    print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max downloads> -r -sp -ytdl \"args\" ] <facebook-id>\
+    \n\rSee youtube-dl -h for available formats and qualities.\
+    \rDefault format:\t\t$audioFormat\nDefault quality:\t$audioQuality\n\n";
     exit(1);
 }
 
-
+# colored debug messages: red and white
 sub dbg {
     print colored("DEBUG: ", "red") . colored($_[0], "white") . "\n" if DEBUG;
 }
 
 
+
 # using http://awpny.com/how-to-facebook-access-token/
-# and uberspace.de!
+# and uberspace!
 sub get_access_token {
     
     my $query = "https://fbsounds.triangulum.uberspace.de/token";
     my $req = HTTP::Request->new(GET => $query);
     my $res = $ua->request($req);
     
-        dbg("token query: " . $query);
+    dbg("token query: " . $query);
 
     if ($res->is_success) {
         return $res->content;
@@ -137,17 +137,17 @@ sub get_access_token {
 ########### MAIN #######################################################################################
 
 
-# first page
-my $start_url = "https://graph.facebook.com/$target/feed?fields=link&access_token=$access_token&limit=$limit";
+# first page to curl
+my $start_url = "https://graph.facebook.com/$target/feed?fields=link&access_token=$access_token&limit=". LIMIT;
 
-    dbg("start_url: " . $start_url);
+dbg("start_url: " . $start_url);
 
 
-# get the fb entity name
+# get fb entity name
 my $fbName = fb_name($target);
 
-    dbg("fb_name: " . $fbName);
-    
+dbg("fb_name: " . $fbName);
+
 print "\nGetting links for " . colored("\"$fbName\"", "yellow") .  " ...\n\n";
 print "Links: " . colored("0\r", "bold green");
 
@@ -157,26 +157,35 @@ my $next_page = $start_url;
 while ($next_page = get_links($next_page)) {}
 
 
-# filter duplicate links
-@link_array = keys %{{ map{$_=>1}@link_array}};
-
-
 # final output before downloading
 my $n_links = $#link_array + 1;
 print "Links: " . colored("$n_links\r", "bold green") . "\n";
 
 
-if (@link_array) {      # we got some links
+if (@link_array) {
 
-    # download and convert to audio
+    # filter duplicate links
+    @link_array = keys %{{ map{$_=>1} @link_array }};
+
+    
+    dbg("B drop_finished: " . ($#link_array +1));
+
+    # remove done links downloaded before
+    drop_finished();
+
+    dbg("A drop_finished: " . ($#link_array + 1));
+
+
+    # download and convert to audio files
     download_vids(@link_array);
     
-    if (@failed_vids) {
+    if (@failed_vids && $retry) {
         download_vids(@failed_vids);   # try again once
     }
 
-    print colored("\nDone.\n\n", "yellow");
-} else {
+    print "\nDone.\n\n";
+
+} else {    
     print colored("\nNo links found.\n\n", "yellow");
 }
 
@@ -185,8 +194,48 @@ if (@link_array) {      # we got some links
 
 
 
+# avoid redownloading videos
+sub drop_finished {
 
-# add link to link file for facebook id if not already present
+    my $fname = "$ENV{HOME}/.fbsounds/.$target.links";   
+    my $content = "";
+
+    if (!(-e "$ENV{HOME}/.fbsounds/")) {
+        mkdir("$ENV{HOME}/.fbsounds") or die "could not create directory $ENV{HOME}/.fbsounds: $? $@";       
+    }
+
+    my $fh;
+    if ( -e $fname ) {
+        open($fh, '<', $fname) or die "cannot open file $fname";
+    } else {
+        system("touch $fname");
+        open($fh, '<', $fname) or die "cannot open file $fname";
+    }
+    while (<$fh>) { $content .= $_; }
+
+    #dbg("Content in drop_finished:\n" . $content);
+
+    foreach my $vid (@link_array) {
+
+        #dbg("Checking for $vid ...");
+        
+        if ($content =~ /\Q$vid\E/) {
+
+            my $index = grep { $link_array[$_] =~ /$vid/ } 0..$#link_array;            
+            splice(@link_array, $index, 1);
+            
+            dbg("Skipping link: " . $vid);
+
+        } else {
+            #dbg("Link " . $vid . " not found in history file $fname");
+        }
+    }
+    close($fh);
+}
+
+
+
+# add link to .links file for facebook id if not already present
 sub history_add {
     
     my $fname = "$ENV{HOME}/.fbsounds/.$target.links";    
@@ -197,27 +246,28 @@ sub history_add {
         mkdir("$ENV{HOME}/.fbsounds") or die "could not create directory $ENV{HOME}/.fbsounds: $? $@";       
     }
 
-    # read the whole file into $content
+    # read file into $content
         open(my $fh, '+>>', $fname) or die "cannot open file $fname";
         
         # seek to beginning, because atm $fh points to EOF
         seek($fh, 0, 0);
-        
-        # now read from it
         while (<$fh>) { $content .= $_; }
+
+        dbg("Content in history_add:\n" . $content);
 
     # append to links file if not found 
         
-        # seek to EOF (append)   
-        seek($fh, 0, 2);
-        
-        if (!($content =~ /$_[0]/)) {    
-            dbg("Link $_[0] not found, appending to links file\n");
+        if (!($content =~ /\Q$_[0]\E/)) {
+            dbg("Link $_[0] not found, appending to $fname");
+            
+            # seek to EOF (append)   
+            seek($fh, 0, 2);
             print $fh $_[0] . "\n";
         }
-
+        
     close($fh); 
 }
+
 
 
 
@@ -228,7 +278,7 @@ sub fb_name {
     my $req = HTTP::Request->new(GET => $query);
 	my $res = $ua->request($req);
     
-        dbg("fb_name query: " . $query) if DEBUG;
+    dbg("fb_name query: " . $query) if DEBUG;
 
     if ($res->is_success) {
         
@@ -241,6 +291,7 @@ sub fb_name {
         exit(1);
     }
 }
+
 
 
 
@@ -267,6 +318,8 @@ sub qualifies {
 
 
 
+
+
 # get links from facebook graph api
 sub get_links {
     
@@ -274,7 +327,7 @@ sub get_links {
 	my $res = $ua->request($req);
     if ($res->is_success) {
         
-            #dbg($res->content);
+        #dbg($res->content);
 
         my $decoded = decode_json($res->content);
         
@@ -316,7 +369,7 @@ sub progress_line {
     
     my $max = $_[1] + 1;
     my $msg = colored("\n[==========]", "yellow") . 
-              colored(" $_[0] / $max ", "bright_blue") . 
+              colored(" $_[0] / $max ", "bright_green") . 
               colored("[==========]" , "yellow") . "\n";
     
     return $msg;
@@ -329,12 +382,12 @@ sub progress_line {
 sub download_vids {
     
     my $n = 1;
+
     foreach my $vid_link (@_) {
         
         print progress_line($n, $#_);
         
         # constructed youtube-dl call
-        my $ret;
         my $call;
         if ($skipPlaylists) {
             
@@ -343,14 +396,19 @@ sub download_vids {
             
             $call = "youtube-dl " . $dl_args . " -i -x --audio-format $audioFormat --audio-quality $audioQuality -o \"$outputDir/%(title)s.%(ext)s\" \"$vid_link\"";
         }
-
-        $ret = system($call);   
+        my $ret = system($call);   
         
-            dbg("return code of youtube-dl: " . $ret);
+        print "\n";
+        
+        dbg("youtube-dl return code: " . $ret);
 
         if ($ret == 0) {
-            # download successfull, add to history
+            
+            # download successful, add to history
             history_add($vid_link);
+        
+            dbg("Added $vid_link to history");
+        
         } else {
             push(@failed_vids, $vid_link);
         }
