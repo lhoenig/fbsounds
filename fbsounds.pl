@@ -306,7 +306,8 @@ sub qualifies {
 
     my @matches = ("youtu.be/",
                    "youtube.com/",
-                   "soundcloud.com/");
+                   "soundcloud.com/",
+                   "myvideo.de/");
     
     foreach my $expr (@matches) {
         if (index($candidate, $expr) != -1) {
