@@ -28,7 +28,8 @@ See `youtube-dl -h` for available formats, qualities and other options.
 Default format:  **best**  
 Default quality: **320K**  
 
-To halt the script while downloading, hit **CTRL-Z** for a SIGKILL. Wait.. could I possibly add a signal handler to the youtube-dl system call? **TODO**
+To halt the script while downloading, hit **CTRL-Z** for a SIGKILL.  
+Wait.. could I possibly add a signal handler to the youtube-dl system call? **TODO**
 
 **IMPORTANT:** For audio conversion to work, you must have the corresponding audio codec library installed, for example lame for mp3 and libvorbis for ogg.  
   
