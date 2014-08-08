@@ -22,7 +22,7 @@ If you have cpan, run `sudo deps/deps.sh` from the repository. This will install
 `./fbsounds [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max-downloads> -r -np -ytdl "args" ] <facebook-id>`  
   
 Where `-np` stands for "skip YouTube playlists".  
-When `-r` is given a retry on error will be performed.
+When `-r` is given a retry on error will be performed.  
 With `-ytdl "args"` you can add custom arguments to youtube-dl. Wrap them in parentheses.  
 See `youtube-dl -h` for available formats, qualities and other options.  
 Default format:  **best**  
