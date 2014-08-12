@@ -1,0 +1,6 @@
+.DS_Store
+deps/
+downloads/
+ffmpeg/
+server/
+youtube-dl/
