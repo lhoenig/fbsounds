@@ -102,9 +102,10 @@ unless (defined $outputDir) {
 # print usage, exit 1
 sub usage {
 
-    print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max downloads> -r -sp -ytdl \"args\" ] <facebook-id>\
+    print "Usage: " . $0 . " [ -o <output-dir>  -f <audio-format>  -q <audio-quality> -n <max downloads> -n max_vids -r -sp -ytdl \"args\" ] <facebook-id>\
     \n\rSee youtube-dl -h for available formats and qualities.\
     \rDefault format:\t\t$audioFormat\nDefault quality:\t$audioQuality\n\n";
+    
     exit(1);
 }
 
