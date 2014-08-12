@@ -239,7 +239,7 @@ sub drop_finished {
 # add link to .links file for facebook id if not already present
 sub history_add {
     
-    my $fname = "$ENV{HOME}/.fbsounds/.$target.links";    
+    my $fname = "$ENV{HOME}/.fbsounds/$target.links";    
     my $content = "";
 
     # when fbsounds runs for the first time, it creates a .fbsounds folder in ~/
@@ -329,7 +329,7 @@ sub get_links {
 	my $res = $ua->request($req);
     if ($res->is_success) {
         
-        #dbg($res->content);
+        dbg("fb response:\n " . $res->content);
 
         my $decoded = decode_json($res->content);
         
