@@ -59,11 +59,12 @@ Otherwise, I would need to obtain an user app token, im not entirely sure. I wil
 <h2>
 <a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
 
-<p><code>./fbsounds [ -o &lt;output-dir&gt;  -f &lt;audio-format&gt;  -q &lt;audio-quality&gt; -n &lt;max-downloads&gt; -r -np -ytdl "args" ] &lt;facebook-id&gt;</code>  </p>
+<p><code>./fbsounds [ -o &lt;output-dir&gt;  -f &lt;audio-format&gt;  -q &lt;audio-quality&gt; -n &lt;max-downloads&gt; -n max_videos -r -np -ytdl "args" ] &lt;facebook-id&gt;</code>  </p>
 
 <p>Where <code>-np</code> stands for "skip YouTube playlists".<br>
 When <code>-r</code> is given a retry on error will be performed.<br>
 With <code>-ytdl "args"</code> you can add custom arguments to youtube-dl. Wrap them in parentheses.<br>
+Limit the number of processed videos with the <code>-n</code> flag.<br>
 See <code>youtube-dl -h</code> for available formats, qualities and other options.<br>
 Default format:  <strong>best</strong><br>
 Default quality: <strong>320K</strong>  </p>
