@@ -32,80 +32,81 @@
         <hr>
 
         <form class="form-horizontal">
-    <fieldset>
+<fieldset>
 
-    <!-- Form Name -->
-    <legend>fbsounds online app</legend>
+<!-- Form Name -->
+<legend>fbsounds online app</legend>
 
-    <!-- Text input-->
-    <div class="control-group">
-      <label class="control-label" for="textinput">group / site ID</label>
-      <div class="controls">
-        <input id="textinput" name="textinput" type="text" placeholder="108775282491150" class="input-xlarge">
-        <p class="help-block">enter the ID of the facebook group / site to process</p>
-      </div>
-    </div>
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="siteid">group / site ID</label>
+  <div class="controls">
+    <input id="siteid" name="siteid" type="text" placeholder="108775282491150" class="input-xlarge">
+    <p class="help-block">enter the ID of the facebook group / site to process</p>
+  </div>
+</div>
 
-    <!-- Text input-->
-    <div class="control-group">
-      <label class="control-label" for="textinput">audio format</label>
-      <div class="controls">
-        <input id="textinput" name="textinput" type="text" placeholder="best" class="input-xlarge">
-        <p class="help-block">"best", "aac", "vorbis", "mp3", "m4a", "opus", or "wav"; best by default</p>
-      </div>
-    </div>
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="audioformat">audio format</label>
+  <div class="controls">
+    <input id="audioformat" name="audioformat" type="text" placeholder="best" class="input-xlarge">
+    <p class="help-block">"best", "aac", "vorbis", "mp3", "m4a", "opus", or "wav"; best by default</p>
+  </div>
+</div>
 
-    <!-- Text input-->
-    <div class="control-group">
-      <label class="control-label" for="textinput">audio quality</label>
-      <div class="controls">
-        <input id="textinput" name="textinput" type="text" placeholder="0" class="input-xlarge">
-        <p class="help-block">ffmpeg/avconv audio quality specification, insert a value between 0 (better) and 9 (worse) for VBR or a                                      specific bitrate like 128K (default 5)</p>
-      </div>
-    </div>
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="textinput">audio quality</label>
+  <div class="controls">
+    <input id="textinput" name="textinput" type="text" placeholder="0" class="input-xlarge">
+    <p class="help-block">ffmpeg/avconv audio quality specification, insert a value between 0 (better) and 9 (worse) for VBR or a                                      specific bitrate like 128K (default 5)</p>
+  </div>
+</div>
 
-    <!-- Text input-->
-    <div class="control-group">
-      <label class="control-label" for="textinput">max videos to get</label>
-      <div class="controls">
-        <input id="textinput" name="textinput" type="text" placeholder="" class="input-xlarge">
-        <p class="help-block">limit to the number of videos downloaded</p>
-      </div>
-    </div>
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="nvids">max videos to get</label>
+  <div class="controls">
+    <input id="nvids" name="nvids" type="text" placeholder="" class="input-xlarge">
+    <p class="help-block">limit to the number of videos downloaded</p>
+  </div>
+</div>
 
-    <!-- Multiple Checkboxes (inline) -->
-    <div class="control-group">
-      <label class="control-label" for="checkboxes">skip YouTube playlists</label>
-      <div class="controls">
-        <label class="checkbox inline" for="checkboxes-0">
-          <input type="checkbox" name="checkboxes" id="checkboxes-0" value="skip">
-          skip
-        </label>
-      </div>
-    </div>
+<!-- Multiple Checkboxes (inline) -->
+<div class="control-group">
+  <label class="control-label" for="skip">skip YouTube playlists</label>
+  <div class="controls">
+    <label class="checkbox inline" for="skip-0">
+      <input type="checkbox" name="skip" id="skip-0" value="skip">
+      skip
+    </label>
+  </div>
+</div>
 
-    <!-- Multiple Checkboxes (inline) -->
-    <div class="control-group">
-      <label class="control-label" for="checkboxes">retry download once when error occures</label>
-      <div class="controls">
-        <label class="checkbox inline" for="checkboxes-0">
-          <input type="checkbox" name="checkboxes" id="checkboxes-0" value="retry">
-          retry
-        </label>
-      </div>
-    </div>
+<!-- Multiple Checkboxes (inline) -->
+<div class="control-group">
+  <label class="control-label" for="retry">retry download once when error occures</label>
+  <div class="controls">
+    <label class="checkbox inline" for="retry-0">
+      <input type="checkbox" name="retry" id="retry-0" value="retry">
+      retry
+    </label>
+  </div>
+</div>
 
-    <!-- Text input-->
-    <div class="control-group">
-      <label class="control-label" for="textinput">custom arguments to youtube-dl</label>
-      <div class="controls">
-        <input id="textinput" name="textinput" type="text" placeholder="" class="input-xlarge">
-        <p class="help-block">additional arguments which are passed to youtube-dl when converting the videos</p>
-      </div>
-    </div>
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="cargs">custom arguments to youtube-dl</label>
+  <div class="controls">
+    <input id="cargs" name="cargs" type="text" placeholder="" class="input-xlarge">
+    <p class="help-block">additional arguments which are passed to youtube-dl when converting the videos</p>
+  </div>
+</div>
 
-    </fieldset>
-    </form>
+</fieldset>
+</form>
+
 
         <section id="main_content">
           <h3>
