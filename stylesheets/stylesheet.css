@@ -46,6 +46,12 @@ table {
 	border-spacing: 0;
 }
 
+fieldset {
+  padding-left: 3%;
+}
+
+.controls {margin-left: 3%;}
+
 /* LAYOUT STYLES */
 body {
   font-size: 1em;
