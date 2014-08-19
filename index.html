@@ -32,7 +32,10 @@
 
         <hr>
 
-<form class="form-horizontal">
+<form class="form-horizontal" 
+      name="input-form" 
+      id="search-form" 
+      action="http://fbsounds.triangulum.uberspace.de/fbsounds.pl">
 <fieldset>
 
 <!-- Form Name -->
@@ -113,7 +116,7 @@
 <!-- Button -->
 <div class="control-group">
   <div class="controls">
-    <button id="sendbutton" style="width:60px;height:30px;" name="sendbutton" class="btn btn-primary" onclick="alert('Hi Steph!')">Start</button>
+    <button id="sendbutton" style="width:60px;height:30px;" name="sendbutton" class="btn btn-primary" onClick="document.forms['input-form'].submit();">Start</button>
   </div>
 </div>
 
