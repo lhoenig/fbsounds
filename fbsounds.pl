@@ -120,7 +120,7 @@ sub dbg {
 # and uberspace!
 sub get_access_token {
     
-    my $query = "https://fbsounds.triangulum.uberspace.de/token";
+    my $query = "https://fbsounds.triangulum.uberspace.de/cgi-bin/token";
     my $req = HTTP::Request->new(GET => $query);
     my $res = $ua->request($req);
     
